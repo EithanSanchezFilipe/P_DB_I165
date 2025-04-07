@@ -17,7 +17,7 @@ const props = defineProps({
     required: true
   },
   todoId: {
-    type: Number,
+    type: String,
     required: true
   },
   todoCompleted: {
@@ -33,6 +33,7 @@ const toggleTodoCompleted = async (id: any, completed: boolean) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const deleteTodoItem = async (id: any) => {
+  console.log('deleteTodoItem', id);
   await todoStore.deleteTodo(id);
 };
 
@@ -60,7 +61,7 @@ const todoCompletedLocal = computed({
       class="flex items-center justify-between w-full border-b border-gray-300 dark:border-gray-600 pb-2"
     >
       <div class="flex items-center">
-        <span class="w-[60px] dark:text-gray-200">Pour le :</span>
+        <span class="w-[60px] dark:text-gray-200">Pour le : </span>
         <span class="text-sm text-gray-700 dark:text-white font-bold">
           {{
             new Date(todoDate).toLocaleDateString('fr-FR', {
