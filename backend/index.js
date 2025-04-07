@@ -6,12 +6,12 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || '3000';
 const env = process.env.NODE_ENV || 'development';
-const db = require('./config/mongoose');
-const connectDB = require('./routes');
+const router = require('./routes/index');
+const connectDB = require('./config/mongoose');
 
 const initApp = async () => {
   try {
-    await db.authenticate();
+    await connectDB();
     console.log('La connexion a la base de données été établie avec succès.');
 
     // Serve the frontend static files
