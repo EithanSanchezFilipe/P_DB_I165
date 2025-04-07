@@ -70,7 +70,18 @@ export const useUser = defineStore('user', {
     },
     async createUser(userForm: LoginForm) {
       if (!this.currentUser) {
-        await createUser(userForm);
+        const response: ResponseData = await createUser(userForm);
+        if ('user' in response && response.user) {
+          this.currentUser = response.user as User;
+        }
+        if ('token' in response && response.token) {
+          this.token = response.token;
+        }
+
+        // store user details and jwt in local storage to keep user logged in between page refreshes
+        localStorage.setItem('user', JSON.stringify(this.currentUser));
+        localStorage.setItem('token', this.token);
+
         this.loaded = false;
       }
     },

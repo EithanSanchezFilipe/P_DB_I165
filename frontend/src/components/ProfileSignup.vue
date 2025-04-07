@@ -32,7 +32,7 @@ const onSubmit = async (formValues: Record<string, any>) => {
     await userStore.createUser(formValues as LoginForm).then(() => {
       errorMsg.value = '';
       loading.value = false;
-      router.push('/login');
+      router.push('/');
     });
   } catch (e) {
     errorMsg.value = (e as { error: string }).error || 'An error occurred';

@@ -1,5 +1,7 @@
 const bcrypt = require('bcrypt');
 const UserModel = require('../models').UserModel;
+const jsonwebtoken = require('jsonwebtoken');
+const JWT_SECRET = require('../config/keys').JWT_SECRET;
 
 const cleanUser = (user) => {
   // eslint-disable-next-line no-unused-vars
@@ -15,7 +17,13 @@ const UserController = {
       password: await bcrypt.hash(password, 8)
     })
       .then((result) => {
-        return res.status(201).json(cleanUser(result));
+        console.log(result.id);
+        const token = jsonwebtoken.sign({}, JWT_SECRET, {
+          subject: result.id.toString(),
+          expiresIn: 60 * 60 * 24 * 30 * 6,
+          algorithm: 'RS256'
+        });
+        return res.status(201).json({ user: cleanUser(result), token });
       })
       .catch((error) => {
         console.error('ADD USER: ', error);

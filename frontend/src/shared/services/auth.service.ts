@@ -5,7 +5,6 @@ const BASE_URL = '/api/auth';
 
 // login user
 export async function login(loginForm: LoginForm): Promise<ResponseData> {
-  console.log('loginForm', loginForm);
   const response = await fetchWrapper.post(
     BASE_URL,
     loginForm as unknown as Record<string, unknown>
