@@ -6,20 +6,13 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || '3000';
 const env = process.env.NODE_ENV || 'development';
-
-const db = require('./config/database').sequelize;
-const router = require('./routes');
-
-const { UserModel, TodoModel } = require('./models');
+const db = require('./config/mongoose');
+const connectDB = require('./routes');
 
 const initApp = async () => {
   try {
     await db.authenticate();
     console.log('La connexion a la base de données été établie avec succès.');
-
-    // Synchronize the DB models
-    UserModel.sync({ alter: true });
-    TodoModel.sync({ alter: true });
 
     // Serve the frontend static files
     app.use(express.static('../dist'));
