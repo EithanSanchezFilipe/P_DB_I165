@@ -1,47 +1,48 @@
 const bcrypt = require('bcrypt');
-const UserModel = require('../models').UserModel;
+const User = require('../models').User;
 const jsonwebtoken = require('jsonwebtoken');
 const JWT_SECRET = require('../config/keys').JWT_SECRET;
 
 const cleanUser = (user) => {
   // eslint-disable-next-line no-unused-vars
-  const { password, ...cleanedUser } = user.get({ plain: true });
+  const { pasword, ...cleanedUser } = user;
   return cleanedUser;
 };
 
 const UserController = {
   createUser: async (req, res) => {
     const { email, password } = req.body;
-    await UserModel.create({
-      email: email.toLowerCase(),
-      password: await bcrypt.hash(password, 8)
-    })
-      .then((result) => {
-        console.log(result.id);
-        const token = jsonwebtoken.sign({}, JWT_SECRET, {
-          subject: result.id.toString(),
-          expiresIn: 60 * 60 * 24 * 30 * 6,
-          algorithm: 'RS256'
-        });
-        return res.status(201).json({ user: cleanUser(result), token });
-      })
-      .catch((error) => {
-        console.error('ADD USER: ', error);
-        if (error && error.name === 'SequelizeUniqueConstraintError') {
-          return res.status(409).json({
-            message: 'Un compte avec cet email exist déjà !'
-          });
-        } else {
-          return res.status(500);
-        }
+
+    try {
+      const hashedPassword = await bcrypt.hash(password, 8);
+      const savedUser = User.create({
+        email: email.toLowerCase(),
+        password: hashedPassword
       });
+
+      const token = jsonwebtoken.sign({}, JWT_SECRET, {
+        subject: (await savedUser)._id.toString(),
+        expiresIn: 60 * 60 * 24 * 30 * 6,
+        algorithm: 'RS256'
+      });
+
+      return res.status(201).json({
+        user: cleanUser(savedUser),
+        token
+      });
+    } catch (error) {
+      console.error('ADD USER: ', error);
+      return res.status(500).json({
+        message: 'Erreur lors de la création du compte.'
+      });
+    }
   },
   getUser: async (req, res) => {
     const user_id = req.sub;
-    await UserModel.findOne({
-      where: { id: user_id },
-      attributes: { exclude: ['id', 'password'] }
+    const user = await User.findOne({
+      _id: user_id
     })
+      .select('-id -password')
       .then((result) => {
         if (result) {
           return res.status(200).json(result);
@@ -56,9 +57,9 @@ const UserController = {
   },
   editUser: async (req, res) => {
     const user_id = req.sub;
-    const query = { id: user_id };
+    const query = { _id: user_id };
     const data = req.body;
-    const user = await UserModel.findOne({ where: query });
+    const user = await User.findOne({ query });
     if (user) {
       user.name = data.name ? data.name : null;
       user.address = data.address ? data.address : null;
@@ -80,9 +81,7 @@ const UserController = {
   deleteCurrentUser: (req, res) => {
     const user_id = req.sub;
     const query = { id: user_id };
-    UserModel.destroy({
-      where: query
-    })
+    User.deleteOne({ query })
       .then(() => {
         return res.status(200).json({ id: user_id });
       })

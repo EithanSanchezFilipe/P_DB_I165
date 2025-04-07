@@ -1,24 +1,23 @@
 const bcrypt = require('bcrypt');
 const jsonwebtoken = require('jsonwebtoken');
 
-const UserModel = require('../models').UserModel;
+const User = require('../models').User;
 const JWT_SECRET = require('../config/keys').JWT_SECRET;
 
 // remove password from user object
 const cleanUser = (user) => {
   // eslint-disable-next-line no-unused-vars
-  const { password, ...cleanedUser } = user.get({ plain: true });
+  const { password, ...cleanedUser } = user;
   return cleanedUser;
 };
 
 const AuthController = {
   loginUser: async (req, res) => {
-    await UserModel.findOne({
-      where: { email: req.body.email.toLowerCase() }
-    })
+    const { email, password } = req.body;
+    await User.findOne({ email })
       .then((result) => {
         if (result) {
-          if (bcrypt.compareSync(req.body.password, result.password)) {
+          if (bcrypt.compareSync(password, result.password)) {
             const user = cleanUser(result);
             const token = jsonwebtoken.sign({}, JWT_SECRET, {
               subject: result.id.toString(),
