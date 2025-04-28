@@ -48,6 +48,7 @@ export const useTodo = defineStore('todo', {
     async deleteTodo(id: string) {
       await deleteTodo(id).then((response: ResponseData) => {
         const todoResponse = response as unknown as ResponseTodoData;
+        console.log('todoResponse', todoResponse);
         if (this.allTodo) {
           // supprime le todo du tableau
           this.allTodo = this.allTodo.filter((todo) => todo._id !== todoResponse._id);

@@ -68,7 +68,7 @@ const TodoController = {
     const query = { _id: todo_id, user_id: user_id };
     Todo.deleteOne(query)
       .then(() => {
-        return res.status(200).json({ id: todo_id });
+        return res.status(200).json({ _id: todo_id });
       })
       .catch((error) => {
         console.error('DELETE TODO: ', error);
