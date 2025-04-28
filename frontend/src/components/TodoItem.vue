@@ -29,6 +29,7 @@ const props = defineProps({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 const toggleTodoCompleted = async (id: any, completed: boolean) => {
+  console.log('toggleTodoCompleted', id, completed);
   await todoStore.updateTodo(id, { completed: completed });
 };
 
@@ -43,7 +44,6 @@ const emit = defineEmits(['update:todoCompleted']);
 const todoCompletedLocal = computed({
   get: () => props.todoCompleted,
   set: (value: boolean) => {
-    console.log('todoCompletedLocal', value);
     toggleTodoCompleted(props.todoId, value);
     emit('update:todoCompleted', value);
   }

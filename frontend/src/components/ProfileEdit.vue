@@ -10,6 +10,7 @@ import FormInput from '@/components/forms/FormInput.vue';
 
 const userStore = useUser();
 const { currentUser } = userStore;
+console.log('currentUser', currentUser._doc.email);
 const loading = ref(false);
 
 const schema = Yup.object().shape({
@@ -56,7 +57,7 @@ const location = computed(() => currentUser?.location);
         Mon Profile
       </h1>
       <p class="text-left mt-2 text-md text-gray-600 dark:text-gray-400">
-        {{ currentUser?.email }}
+        {{ currentUser._doc?.email }}
       </p>
       <Form
         @submit="onSubmit"
