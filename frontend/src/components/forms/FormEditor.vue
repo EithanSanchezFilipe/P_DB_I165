@@ -38,7 +38,6 @@ const editor = useEditor({
     }
   },
   onUpdate: ({ editor }) => {
-    console.log(editor.getHTML());
     const content = editor.getHTML();
     emit('update:modelValue', content);
   },

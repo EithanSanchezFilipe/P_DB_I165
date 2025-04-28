@@ -29,13 +29,11 @@ const props = defineProps({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 const toggleTodoCompleted = async (id: any, completed: boolean) => {
-  console.log('toggleTodoCompleted', id, completed);
   await todoStore.updateTodo(id, { completed: completed });
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const deleteTodoItem = async (id: any) => {
-  console.log('deleteTodoItem', id);
   await todoStore.deleteTodo(id);
 };
 
