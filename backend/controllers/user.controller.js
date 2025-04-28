@@ -59,29 +59,34 @@ const UserController = {
     const user_id = req.sub;
     const query = { _id: user_id };
     const data = req.body;
-    const user = await User.findOne({ query });
-    if (user) {
-      user.name = data.name ? data.name : null;
-      user.address = data.address ? data.address : null;
-      user.zip = data.zip ? data.zip : null;
-      user.location = data.location ? data.location : null;
-      await user
-        .save()
-        .then((result) => {
-          return res.status(200).json(result);
-        })
-        .catch((error) => {
-          console.error('UPDATE USER: ', error);
-          return res.status(500);
-        });
-    } else {
-      return res.status(404);
-    }
+    User.findOne(query)
+      .select('-password')
+      .then((user) => {
+        user.name = data.name ? data.name : null;
+        user.address = data.address ? data.address : null;
+        user.zip = data.zip ? data.zip : null;
+        user.location = data.location ? data.location : null;
+        user
+          .save()
+          .then((result) => {
+            return res.status(200).json(result);
+          })
+          .catch((error) => {
+            console.error('UPDATE USER: ', error);
+            return res.status(500);
+          });
+      })
+      .catch((error) => {
+        console.error('GET USER: ', error);
+        return res.status(500);
+      });
+    return res.status(404);
   },
   deleteCurrentUser: (req, res) => {
     const user_id = req.sub;
-    const query = { id: user_id };
-    User.deleteOne({ query })
+    const query = { _id: user_id };
+    console.log('DELETE USER: ', query);
+    User.deleteOne(query)
       .then(() => {
         return res.status(200).json({ id: user_id });
       })
