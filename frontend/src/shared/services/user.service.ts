@@ -25,7 +25,7 @@ export async function deleteCurrentUser(): Promise<ResponseData> {
 }
 
 // update current user
-export async function updateCurrentUser(userForm: User): Promise<ResponseData> {
+export async function updateCurrentUser(userForm: User): Promise<User> {
   const response = await fetchWrapper.patch(
     BASE_URL,
     userForm as unknown as Record<string, unknown>

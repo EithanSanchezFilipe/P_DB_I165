@@ -43,8 +43,9 @@ export const useUser = defineStore('user', {
   actions: {
     async login({ email, password }: { email: string; password: string }): Promise<ResponseData> {
       const response: ResponseData = await login({ email, password });
-      if ('user' in response && response.user) {
-        this.currentUser = response.user as User;
+      console.log('Login response', response);
+      if ('user' in response && response.user?._doc) {
+        this.currentUser = response.user?._doc as User;
       }
       if ('token' in response && response.token) {
         this.token = response.token;
@@ -97,9 +98,10 @@ export const useUser = defineStore('user', {
     },
     async updateUser(userForm: User) {
       if (this.currentUser) {
-        const response: ResponseData = await updateCurrentUser(userForm);
-        if ('user' in response && response.user) {
-          this.currentUser = response.user as User;
+        const response: User = await updateCurrentUser(userForm);
+        if (response) {
+          console.log('response', response);
+          this.currentUser = response as User;
         }
         this.loaded = true;
       }
