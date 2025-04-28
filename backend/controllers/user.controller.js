@@ -39,7 +39,7 @@ const UserController = {
   },
   getUser: async (req, res) => {
     const user_id = req.sub;
-    const user = await User.findOne({
+    await User.findOne({
       _id: user_id
     })
       .select('-id -password')
