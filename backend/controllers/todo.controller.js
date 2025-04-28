@@ -77,17 +77,10 @@ const TodoController = {
   },
   getSearchTodo: async (req, res) => {
     const user_id = req.sub;
-    const query = req.query.q;
-    await Todo.find({
-      where: [
-        {
-          user_id: user_id
-        },
-        Sequelize.literal(`MATCH (text) AGAINST ('*${query}*' IN BOOLEAN MODE)`)
-      ],
-      order: [['date', 'ASC']],
-      attributes: { exclude: ['user_id'] }
-    })
+    const q = req.query.q;
+    const query = { $text: { $search: q, $language: 'french' }, user_id: user_id };
+    await Todo.find(query, { score: { $meta: 'textScore' } })
+      .sort({ score: { $meta: 'textScore' } })
       .then((result) => {
         if (result) {
           return res.status(200).json(result);
