@@ -38,10 +38,12 @@ const TodoController = {
       });
   },
   editTodo: async (req, res) => {
+    console.log('EDIT TODO: ', req.body, req.params);
     const user_id = req.sub;
-    const query = { id: req.params.id, user_id: user_id };
+    console.log('user_id', user_id);
+    const query = { _id: req.params.id, user_id: user_id };
     const data = req.body;
-    const result = await Todo.findOne({ query });
+    const result = await Todo.findOne(query);
     if (result) {
       result.completed = data.completed ? data.completed : false;
       result.text = data.text ? data.text : result.text;
