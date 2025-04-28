@@ -36,6 +36,7 @@ export const useTodo = defineStore('todo', {
     },
     async updateTodo(id: string, todoForm: TodoUpdateForm) {
       await updateTodo(id, todoForm).then((response: ResponseData) => {
+        console.log('todoResponse');
         const todoResponse = response as unknown as ResponseTodoData;
         if (this.allTodo) {
           // mets à jour le todo dans le tableau

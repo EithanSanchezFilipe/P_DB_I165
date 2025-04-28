@@ -27,6 +27,7 @@ const props = defineProps({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const toggleTodoCompleted = async (id: any, completed: boolean) => {
   await todoStore.updateTodo(id, { completed: completed });
 };
@@ -42,6 +43,7 @@ const emit = defineEmits(['update:todoCompleted']);
 const todoCompletedLocal = computed({
   get: () => props.todoCompleted,
   set: (value: boolean) => {
+    console.log('todoCompletedLocal', value);
     toggleTodoCompleted(props.todoId, value);
     emit('update:todoCompleted', value);
   }
@@ -75,7 +77,6 @@ const todoCompletedLocal = computed({
       <div class="flex flex-1 align-middle justify-end">
         <Toggle
           v-model="todoCompletedLocal"
-          @change="toggleTodoCompleted(todoId, todoCompletedLocal)"
           :classes="{
             container:
               'inline-block w-[70px] rounded-full outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-30',
