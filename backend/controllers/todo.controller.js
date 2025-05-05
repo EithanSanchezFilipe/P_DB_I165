@@ -1,5 +1,4 @@
-const { Sequelize } = require('sequelize');
-
+const redisClient = require('../config/redis');
 const Todo = require('../models').Todo;
 
 const TodoController = {
@@ -13,6 +12,15 @@ const TodoController = {
       user_id: user_id
     })
       .then((result) => {
+        const todo = {
+          _id: result._id,
+          text: result.text,
+          date: result.date,
+          completed: result.completed,
+          user_id: result.user_id,
+          __v: result.__v
+        };
+        redisClient.rPush(`todos:${user_id}`, JSON.stringify(todo));
         return res.status(201).json(result);
       })
       .catch((error) => {
@@ -22,57 +30,79 @@ const TodoController = {
   },
   getAllTodo: async (req, res) => {
     const user_id = req.sub;
-    await Todo.find({ user_id: user_id })
-      .sort({ date: 1 })
-      .select('-user_id')
-      .then((result) => {
-        if (result) {
-          return res.status(200).json(result);
-        } else {
-          return res.status(404);
-        }
-      })
-      .catch((error) => {
-        console.error('GET ALL TODO: ', error);
-        return res.status(500);
-      });
+    const todos = await redisClient.lRange(`todos:${user_id}`, 0, -1);
+    if (todos.length > 0) {
+      return res.status(200).json(todos.map(JSON.parse));
+    } else {
+      await Todo.find({ user_id: user_id })
+        .sort({ date: 1 })
+        .then((result) => {
+          if (result) {
+            result.map((todo) => {
+              redisClient.rPush(`todos:${user_id}`, JSON.stringify(todo));
+            });
+            redisClient.expire(`todos:${user_id}`, 3600);
+            return res.status(200).json(result);
+          } else {
+            return res.status(404);
+          }
+        })
+        .catch((error) => {
+          console.error('GET ALL TODO: ', error);
+          return res.status(500);
+        });
+    }
   },
   editTodo: async (req, res) => {
-    console.log('EDIT TODO: ', req.body, req.params);
     const user_id = req.sub;
-    console.log('user_id', user_id);
     const query = { _id: req.params.id, user_id: user_id };
     const data = req.body;
+
     const result = await Todo.findOne(query);
+    redisClient.lRem(`todos:${user_id}`, 0, JSON.stringify(result));
+
     if (result) {
       result.completed = data.completed ? data.completed : false;
       result.text = data.text ? data.text : result.text;
       result.date = data.date ? data.date : result.date;
+
       await result
         .save()
         .then(() => {
+          redisClient.rPush(`todos:${user_id}`, JSON.stringify(result));
           return res.status(200).json(result);
         })
         .catch((error) => {
           console.error('UPDATE TODO: ', error);
-          return res.status(500);
+          return res.status(500).json({ error: 'Error updating todo' });
         });
     } else {
-      return res.status(404);
+      return res.status(404).json({ message: 'Todo not found' });
     }
   },
   deleteTodo: (req, res) => {
     const user_id = req.sub;
     const todo_id = req.params.id;
-    console.log('todo_id', req.params);
-    const query = { _id: todo_id, user_id: user_id };
-    Todo.deleteOne(query)
-      .then(() => {
-        return res.status(200).json({ _id: todo_id });
+    const query = { _id: todo_id, user_id };
+
+    Todo.findOneAndDelete(query)
+      .then((todo) => {
+        if (!todo) {
+          return res.status(404).json({ message: 'Todo not found' });
+        }
+        return redisClient
+          .lRem(`todos:${user_id}`, 0, JSON.stringify(todo))
+          .then(() => {
+            return res.status(200).json({ _id: todo_id });
+          })
+          .catch((redisErr) => {
+            console.error('REDIS LREM ERROR:', redisErr);
+            return res.status(200).json({ _id: todo_id, warning: 'Redis cache not updated' });
+          });
       })
       .catch((error) => {
-        console.error('DELETE TODO: ', error);
-        return res.status(500);
+        console.error('DELETE TODO:', error);
+        return res.status(500).json({ error: 'Server error deleting todo' });
       });
   },
   getSearchTodo: async (req, res) => {

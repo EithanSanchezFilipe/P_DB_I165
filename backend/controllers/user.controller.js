@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const User = require('../models').User;
 const jsonwebtoken = require('jsonwebtoken');
 const JWT_SECRET = require('../config/keys').JWT_SECRET;
+const redisClient = require('../index');
 
 const cleanUser = (user) => {
   // eslint-disable-next-line no-unused-vars
@@ -39,21 +40,34 @@ const UserController = {
   },
   getUser: async (req, res) => {
     const user_id = req.sub;
-    await User.findOne({
-      _id: user_id
-    })
-      .select('-id -password')
-      .then((result) => {
-        if (result) {
-          return res.status(200).json(result);
-        } else {
-          return res.status(404);
-        }
+    const userSession = redisClient.hGetAll(`user:${user_id}`);
+    if (userSession) {
+      return res.status(200).json(userSession);
+    } else {
+      await User.findOne({
+        _id: user_id
       })
-      .catch((error) => {
-        console.error('GET USER: ', error);
-        return res.status(500);
-      });
+        .select('-id -password')
+        .then(async (result) => {
+          if (result) {
+            await redisClient.hSet(`user:${user_id}`, {
+              email: result.email,
+              name: result.name,
+              address: result.address,
+              zip: result.zip,
+              location: result.location
+            });
+            await redisClient.expire(`user:${user_id}`, 3600);
+            return res.status(200).json(result);
+          } else {
+            return res.status(404);
+          }
+        })
+        .catch((error) => {
+          console.error('GET USER: ', error);
+          return res.status(500);
+        });
+    }
   },
   editUser: async (req, res) => {
     const user_id = req.sub;

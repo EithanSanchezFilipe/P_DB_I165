@@ -7,12 +7,13 @@ const port = process.env.PORT || '3000';
 const env = process.env.NODE_ENV || 'development';
 const router = require('./routes/index');
 const connectDB = require('./config/mongoose');
+const redisClient = require('./config/redis');
+const { connect } = require('http2');
 
 const initApp = async () => {
   try {
-    await connectDB();
-    console.log('La connexion a la base de données été établie avec succès.');
-
+    redisClient.connect();
+    connectDB();
     // Serve the frontend static files
     app.use(express.static('../dist'));
 
