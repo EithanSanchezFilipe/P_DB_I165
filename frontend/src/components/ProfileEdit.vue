@@ -56,7 +56,7 @@ const location = computed(() => currentUser?.location);
         Mon Profile
       </h1>
       <p class="text-left mt-2 text-md text-gray-600 dark:text-gray-400">
-        {{ currentUser.email }}
+        {{ currentUser?.email }}
       </p>
       <Form
         @submit="onSubmit"
@@ -70,7 +70,7 @@ const location = computed(() => currentUser?.location);
           <FormInput name="address" :value="address" type="text" label="Adresse" />
         </div>
         <div class="col-span col-start-1">
-          <FormInput name="zip" :value="zip.toString()" type="text" label="NPA" />
+          <FormInput name="zip" :value="zip?.toString()" type="text" label="NPA" />
         </div>
         <div class="col-span-3">
           <FormInput name="location" :value="location" type="text" label="Lieu" />
