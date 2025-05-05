@@ -1,0 +1,2 @@
+import
+docker exec -i mongodb mongorestore --uri=mongodb://root:admin@localhost:27017 --authenticationDatabase admin --gzip ./backupdb/db_mflix.gz
