@@ -1,2 +1,47 @@
 import
-docker exec -i mongodb mongorestore --uri=mongodb://root:admin@localhost:27017 --authenticationDatabase admin --gzip ./backupdb/db_mflix.gz
+docker exec -i mongodb mongorestore --uri=mongodb://root:admin@localhost:27017 --authenticationDatabase admin --gzip --archive=./backupdb/db_mflix.gz
+
+roles/users
+use('db_mflix');
+db.createRole({
+  role: 'Administrateur',
+  privileges: [],
+  roles: [{ role: 'dbOwner', db: 'db_mflix' }],
+});
+db.createUser({ user: 'admin', pwd: 'admin', roles: ['Administrator'] });
+
+db.createRole({
+  role: 'Utilisateur',
+  privileges: [
+    {
+      resource: { db: 'db_mflix', collection: 'movies' },
+      actions: ['find'],
+    },
+    {
+      resource: { db: 'db_mflix', collection: 'comments' },
+      actions: ['find', 'insert', 'update'],
+    },
+  ],
+  roles: [],
+});
+db.createUser({ user: 'user', pwd: 'user', roles: ['User'] });
+
+db.createRole({
+  role: 'Manager',
+  privileges: [
+    {
+      resource: { db: 'db_mflix', collection: 'users' },
+      actions: ['find'],
+    },
+    {
+      resource: { db: 'db_mflix', collection: 'movies' },
+      actions: ['find', 'update', 'remove'],
+    },
+    {
+      resource: { db: 'db_mflix', collection: 'comments' },
+      actions: ['find', 'update', 'remove'],
+    },
+  ],
+  roles: [],
+});
+db.createUser({ user: 'manager', pwd: 'manager', roles: ['Manager'] });
