@@ -45,3 +45,6 @@ db.createRole({
   roles: [],
 });
 db.createUser({ user: 'manager', pwd: 'manager', roles: ['Manager'] });
+
+
+docker exec -i mongodb mongodump --uri=mongodb://root:admin@localhost:27017 --authenticationDatabase admin --db=db_mflix --gzip --archive=./backupdb/backup_db_mflix.gz
