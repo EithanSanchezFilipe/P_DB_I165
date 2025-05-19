@@ -1,3 +1,4 @@
+const { json } = require('sequelize');
 const redisClient = require('../config/redis');
 const Todo = require('../models').Todo;
 
@@ -20,7 +21,10 @@ const TodoController = {
           user_id: result.user_id,
           __v: result.__v
         };
-        redisClient.rPush(`todos:${user_id}`, JSON.stringify(todo));
+        redisClient.rPush(`todos:${user_id}`, JSON.stringify(todo)).catch((error) => {
+          console.error('Redis could not add the todo', error);
+        });
+        redisClient.expire(`todos:${user_id}`, 3600);
         return res.status(201).json(result);
       })
       .catch((error) => {
@@ -38,8 +42,9 @@ const TodoController = {
         .sort({ date: 1 })
         .then((result) => {
           if (result) {
-            result.map((todo) => {
-              redisClient.rPush(`todos:${user_id}`, JSON.stringify(todo));
+            const todos = result.map((todo) => json.stringify(todo));
+            redisClient.rPush(`todos:${user_id}`, ...todos).catch((error) => {
+              console.error('Redis could not add the todos', error);
             });
             redisClient.expire(`todos:${user_id}`, 3600);
             return res.status(200).json(result);
@@ -59,7 +64,9 @@ const TodoController = {
     const data = req.body;
 
     const result = await Todo.findOne(query);
-    redisClient.lRem(`todos:${user_id}`, 0, JSON.stringify(result));
+    redisClient.lRem(`todos:${user_id}`, 0, JSON.stringify(result)).catch((error) => {
+      console.error('Redis could not edit the todo', error);
+    });
 
     if (result) {
       result.completed = data.completed ? data.completed : false;
@@ -69,7 +76,9 @@ const TodoController = {
       await result
         .save()
         .then(() => {
-          redisClient.rPush(`todos:${user_id}`, JSON.stringify(result));
+          redisClient.rPush(`todos:${user_id}`, JSON.stringify(result)).catch((error) => {
+            console.error('Redis could not edit the todo', error);
+          });
           return res.status(200).json(result);
         })
         .catch((error) => {
@@ -96,8 +105,8 @@ const TodoController = {
             return res.status(200).json({ _id: todo_id });
           })
           .catch((redisErr) => {
-            console.error('REDIS LREM ERROR:', redisErr);
-            return res.status(200).json({ _id: todo_id, warning: 'Redis cache not updated' });
+            console.error('Redis could not delete the todo', redisErr);
+            return res.status(200).json({ _id: todo_id, message: 'Redis cache not updated' });
           });
       })
       .catch((error) => {

@@ -40,7 +40,6 @@ const UserController = {
   },
   getUser: async (req, res) => {
     const user_id = req.sub;
-    const userSession = redisClient.hGetAll(`user:${user_id}`);
     if (userSession) {
       return res.status(200).json(userSession);
     } else {
@@ -57,7 +56,6 @@ const UserController = {
               zip: result.zip,
               location: result.location
             });
-            await redisClient.expire(`user:${user_id}`, 3600);
             return res.status(200).json(result);
           } else {
             return res.status(404);
