@@ -1,6 +1,4 @@
-const { text } = require('express');
 const mongoose = require('mongoose');
-const { TEXT } = require('sequelize');
 const { Schema } = mongoose;
 
 const TodoSchema = new Schema({
@@ -16,7 +14,7 @@ const TodoSchema = new Schema({
     required: true
   }
 });
-TodoSchema.index({ text: 'text' });
+TodoSchema.index({ text: 'text' }, { default_language: 'french' });
 const Todo = mongoose.model('Todo', TodoSchema);
 
 module.exports = Todo;
