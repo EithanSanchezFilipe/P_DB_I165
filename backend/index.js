@@ -8,13 +8,16 @@ const env = process.env.NODE_ENV || 'development';
 const router = require('./routes/index');
 const connectDB = require('./config/mongoose');
 const redisClient = require('./config/redis');
-const { connect } = require('http2');
 
 const initApp = async () => {
   try {
-    redisClient.connect();
-    connectDB();
+    await redisClient;
+    await connectDB();
     // Serve the frontend static files
+    app.use((req, res, next) => {
+      console.log('aaaaaaaaaa');
+      next();
+    });
     app.use(express.static('../dist'));
 
     app.use(express.json());
