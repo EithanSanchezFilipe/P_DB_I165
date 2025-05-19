@@ -13,11 +13,6 @@ const initApp = async () => {
   try {
     await redisClient;
     await connectDB();
-    // Serve the frontend static files
-    app.use((req, res, next) => {
-      console.log('aaaaaaaaaa');
-      next();
-    });
     app.use(express.static('../dist'));
 
     app.use(express.json());

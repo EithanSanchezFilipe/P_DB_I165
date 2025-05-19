@@ -34,19 +34,21 @@ const TodoController = {
   },
   getAllTodo: async (req, res) => {
     const user_id = req.sub;
-    const todos = await redisClient.lRange(`todos:${user_id}`, 0, -1);
-    if (todos.length > 0) {
-      return res.status(200).json(todos.map(JSON.parse));
+    const todosRedis = await redisClient.lRange(`todos:${user_id}`, 0, -1);
+    if (todosRedis.length > 0) {
+      return res.status(200).json(todosRedis.map(JSON.parse));
     } else {
       await Todo.find({ user_id: user_id })
         .sort({ date: 1 })
         .then((result) => {
           if (result) {
-            const todos = result.map((todo) => json.stringify(todo));
-            redisClient.rPush(`todos:${user_id}`, ...todos).catch((error) => {
-              console.error('Redis could not add the todos', error);
-            });
-            redisClient.expire(`todos:${user_id}`, 3600);
+            const todos = result.map((todo) => JSON.stringify(todo));
+            if (todos.length > 0) {
+              redisClient.lRem(`todos:${user_id}`, 0, JSON.stringify(result)).catch((error) => {
+                console.error('Redis could not remove the todos', error);
+              });
+              redisClient.expire(`todos:${user_id}`, 3600);
+            }
             return res.status(200).json(result);
           } else {
             return res.status(404);

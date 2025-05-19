@@ -71,17 +71,30 @@ const UserController = {
     const user_id = req.sub;
     const query = { _id: user_id };
     const data = req.body;
+    let changes = {};
     User.findOne(query)
       .select('-password')
       .then((user) => {
-        user.name = data.name ? data.name : null;
-        user.address = data.address ? data.address : null;
-        user.zip = data.zip ? data.zip : null;
-        user.location = data.location ? data.location : null;
+        if (data.name && data.name !== user.name) {
+          changes.name = data.name;
+          user.name = data.name;
+        }
+        if (data.address && data.address !== user.address) {
+          changes.address = data.address;
+          user.address = data.address;
+        }
+        if (data.zip && data.zip !== user.zip) {
+          changes.zip = data.zip;
+          user.zip = data.zip;
+        }
+        if (data.location && data.location !== user.location) {
+          changes.location = data.location;
+          user.location = data.location;
+        }
         user
           .save()
-          .then((result) => {
-            return res.status(200).json(result);
+          .then((_) => {
+            return res.status(200).json(changes);
           })
           .catch((error) => {
             console.error('UPDATE USER: ', error);
