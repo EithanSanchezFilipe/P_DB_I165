@@ -1,11 +1,13 @@
 export interface User {
-  id?: number;
-  name: string;
-  email: string;
-  password: string;
-  address: string;
-  zip: string;
-  location: string;
+  _doc?: {
+    id: number;
+    name: string;
+    email: string;
+    password: string;
+    address: string;
+    zip: string;
+    location: string;
+  };
 }
 
 export interface LoginForm extends Partial<User> {

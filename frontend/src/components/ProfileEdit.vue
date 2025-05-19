@@ -10,6 +10,7 @@ import FormInput from '@/components/forms/FormInput.vue';
 
 const userStore = useUser();
 const { currentUser } = userStore;
+console.log(currentUser);
 const loading = ref(false);
 
 const schema = Yup.object().shape({
@@ -43,6 +44,7 @@ const name = computed(() => currentUser?.name);
 const address = computed(() => currentUser?.address);
 const zip = computed(() => currentUser?.zip);
 const location = computed(() => currentUser?.location);
+const email = computed(() => currentUser?.email);
 </script>
 
 <template>
@@ -56,7 +58,7 @@ const location = computed(() => currentUser?.location);
         Mon Profile
       </h1>
       <p class="text-left mt-2 text-md text-gray-600 dark:text-gray-400">
-        {{ currentUser?.email }}
+        {{ email }}
       </p>
       <Form
         @submit="onSubmit"
