@@ -44,8 +44,8 @@ export const useUser = defineStore('user', {
     async login({ email, password }: { email: string; password: string }): Promise<ResponseData> {
       const response: ResponseData = await login({ email, password });
       console.log('Login response', response);
-      if ('user' in response && response.user?._doc) {
-        this.currentUser = response.user?._doc as User;
+      if ('user' in response && response.user) {
+        this.currentUser = response.user as User;
       }
       if ('token' in response && response.token) {
         this.token = response.token;
